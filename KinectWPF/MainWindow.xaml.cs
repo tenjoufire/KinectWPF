@@ -95,6 +95,11 @@ namespace KinectWPF
             }
         }
 
+        private void ShowHeadDirection()
+        {
+
+        }
+
         private void DrawEllipse(Joint joint, int R, Brush brush)
         {
             var ellipse = new Ellipse() { Width = R, Height = R, Fill = brush};
@@ -121,6 +126,11 @@ namespace KinectWPF
             {
                 kinect.Close();
             }
+        }
+
+        private void InitButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
