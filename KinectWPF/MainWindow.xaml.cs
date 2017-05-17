@@ -55,6 +55,7 @@ namespace KinectWPF
         void bodyFrameReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
         {
             UpdateBodyFrame(e);
+            DrawBodyFrame();
         }
 
         private void UpdateBodyFrame(BodyFrameArrivedEventArgs e)
