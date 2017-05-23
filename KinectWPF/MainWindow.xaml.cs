@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
+using Microsoft.Kinect.Face;
 
 namespace KinectWPF
 {
@@ -24,6 +25,8 @@ namespace KinectWPF
         KinectSensor kinect;
         BodyFrameReader bodyFrameReader;
         Body[] bodies;
+        int timer = 0;
+        //Joint[] heads;
 
         public MainWindow()
         {
@@ -56,6 +59,13 @@ namespace KinectWPF
         {
             UpdateBodyFrame(e);
             DrawBodyFrame();
+            timer++;
+            if (timer == 60)
+            {
+                ShowHeadDirection();
+                timer = 0;
+            }
+            
         }
 
         private void UpdateBodyFrame(BodyFrameArrivedEventArgs e)
@@ -70,6 +80,7 @@ namespace KinectWPF
                 bodyFrame.GetAndRefreshBodyData(bodies);
             }
         }
+
 
         private void DrawBodyFrame()
         {
@@ -97,7 +108,31 @@ namespace KinectWPF
 
         private void ShowHeadDirection()
         {
+            int i = 0;
+            //use tracking body only
+            foreach(var body in bodies.Where(b => b.IsTracked))
+            {
+                //頭の情報を取得
+                Joint head = body.Joints[JointType.Head];
+                JointOrientation headOrientation = body.JointOrientations[JointType.Neck];
+                int pitch, yaw, roll;                
 
+                //trackingされてなければスキップ
+                if (head.TrackingState == TrackingState.NotTracked)
+                    continue;
+
+                //変換したい
+                ConvertQuaternionToEulerAngle(headOrientation.Orientation, out pitch, out yaw, out roll);
+                string faceInfo = $"pitch: {pitch} yaw: {yaw} roll: {roll}";
+
+                //GUIスレッドにて非同期に書き込み
+                Dispatcher.Invoke(() =>
+                {
+                    LogText.Text += $"[{i}] {head.Position.X} {head.Position.Y}{Environment.NewLine}{faceInfo}{Environment.NewLine}";
+                    LogText.ScrollToEnd();
+                });
+                i++;
+            }
         }
 
         private void DrawEllipse(Joint joint, int R, Brush brush)
@@ -126,6 +161,26 @@ namespace KinectWPF
             {
                 kinect.Close();
             }
+        }
+
+        private void ConvertQuaternionToEulerAngle(Vector4 rotQuaternion, out int pitch, out int yaw, out int roll)
+        {
+            double x = rotQuaternion.X;
+            double y = rotQuaternion.Y;
+            double z = rotQuaternion.Z;
+            double w = rotQuaternion.W;
+
+            // convert face rotation quaternion to Euler angles in degrees
+            double yawD, pitchD, rollD;
+            pitchD = Math.Atan2(2 * ((y * z) + (w * x)), (w * w) - (x * x) - (y * y) + (z * z)) / Math.PI * 180.0;
+            yawD = Math.Asin(2 * ((w * y) - (x * z))) / Math.PI * 180.0;
+            rollD = Math.Atan2(2 * ((x * y) + (w * z)), (w * w) + (x * x) - (y * y) - (z * z)) / Math.PI * 180.0;
+
+            // clamp the values to a multiple of the specified increment to control the refresh rate
+            double increment = 5.0;
+            pitch = (int)(Math.Floor((pitchD + ((increment / 2.0) * (pitchD > 0 ? 1.0 : -1.0))) / increment) * increment);
+            yaw = (int)(Math.Floor((yawD + ((increment / 2.0) * (yawD > 0 ? 1.0 : -1.0))) / increment) * increment);
+            roll = (int)(Math.Floor((rollD + ((increment / 2.0) * (rollD > 0 ? 1.0 : -1.0))) / increment) * increment);
         }
 
         private void InitButton_Click(object sender, RoutedEventArgs e)
