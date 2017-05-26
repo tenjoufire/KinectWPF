@@ -25,47 +25,109 @@ namespace KinectWPF
         KinectSensor kinect;
         BodyFrameReader bodyFrameReader;
         Body[] bodies;
+        FaceFrameSource[] faceFrameSources;
+        FaceFrameReader[] faceFrameReaders;
+        FaceFrameResult[] faceFrameResults;
+        int bodyCount;
         int timer = 0;
+
+        
         //Joint[] heads;
 
         public MainWindow()
         {
+            // specify the required face frame results
+            FaceFrameFeatures faceFrameFeatures =
+                FaceFrameFeatures.BoundingBoxInColorSpace
+                | FaceFrameFeatures.PointsInColorSpace
+                | FaceFrameFeatures.RotationOrientation
+                | FaceFrameFeatures.FaceEngagement
+                | FaceFrameFeatures.Glasses
+                | FaceFrameFeatures.Happy
+                | FaceFrameFeatures.LeftEyeClosed
+                | FaceFrameFeatures.RightEyeClosed
+                | FaceFrameFeatures.LookingAway
+                | FaceFrameFeatures.MouthMoved
+                | FaceFrameFeatures.MouthOpen;
+
+            //open the kinect
+            kinect = KinectSensor.GetDefault();
+            kinect.Open();
+
+            //open the body reader
+            bodyFrameReader = kinect.BodyFrameSource.OpenReader();
+
+            //set body count
+            bodyCount = kinect.BodyFrameSource.BodyCount;
+
+            //init Body data array
+            bodies = new Body[bodyCount];
+
+            //face frame reader
+            faceFrameSources = new FaceFrameSource[bodyCount];
+            faceFrameReaders = new FaceFrameReader[bodyCount];
+            for (int i = 0; i < bodyCount; i++)
+            {
+                faceFrameSources[i] = new FaceFrameSource(kinect, 0, faceFrameFeatures);
+                faceFrameReaders[i] = faceFrameSources[i].OpenReader();
+            }
+            faceFrameResults = new FaceFrameResult[bodyCount];
+
             InitializeComponent();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                //open the kinect
-                kinect = KinectSensor.GetDefault();
-                kinect.Open();
+                for (int i = 0; i < bodyCount; i++)
+                {
+                    if (faceFrameReaders[i] != null)
+                    {
+                        // wire handler for face frame arrival
+                        faceFrameReaders[i].FrameArrived += FaceFrameReader_FrameArrived;
+                    }
+                }
+            bodyFrameReader.FrameArrived += BodyFrameReader_FrameArrived;
 
-                //open the body reader
-                bodyFrameReader = kinect.BodyFrameSource.OpenReader();
-                bodyFrameReader.FrameArrived += bodyFrameReader_FrameArrived;
-
-                //init Body data array
-                bodies = new Body[kinect.BodyFrameSource.BodyCount];
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Close();
-            }
         }
 
-        void bodyFrameReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
+        void BodyFrameReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
         {
             UpdateBodyFrame(e);
             DrawBodyFrame();
+            /*
             timer++;
             if (timer == 60)
             {
                 ShowHeadDirection();
                 timer = 0;
             }
+            */
             
+        }
+
+        void FaceFrameReader_FrameArrived(object sender, FaceFrameArrivedEventArgs e)
+        {
+            using (var faceFrame = e.FrameReference.AcquireFrame())
+            {
+                int index = GetFaceSourceIndex(faceFrame.FaceFrameSource);
+                faceFrameResults[index] = faceFrame.FaceFrameResult;
+            }
+        }
+
+        private int GetFaceSourceIndex(FaceFrameSource faceFrameSource)
+        {
+            int index = -1;
+
+            for (int i = 0; i < this.bodyCount; i++)
+            {
+                if (faceFrameSources[i] == faceFrameSource)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
         }
 
         private void UpdateBodyFrame(BodyFrameArrivedEventArgs e)
@@ -78,6 +140,34 @@ namespace KinectWPF
                 }
                 //Get Body Data
                 bodyFrame.GetAndRefreshBodyData(bodies);
+
+                for(int i = 0; i < bodyCount; i++)
+                {
+                    if (faceFrameSources[i].IsTrackingIdValid)
+                    {
+                        timer++;
+                        if (timer == 60)
+                        {
+                            var faceQuaternion = faceFrameResults[i].FaceRotationQuaternion;
+                            int pitch, yaw, roll;
+                            ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
+                            Dispatcher.Invoke(() =>
+                            {
+                                LogText.Text += $"[{i}] {pitch} {yaw} {roll} {Environment.NewLine}";
+                                LogText.ScrollToEnd();
+                            });
+                            timer = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (bodies[i].IsTracked)
+                        {
+                            faceFrameSources[i].TrackingId = bodies[i].TrackingId;
+                        }
+                    }
+                }
+                
             }
         }
 
@@ -155,6 +245,12 @@ namespace KinectWPF
             {
                 bodyFrameReader.Dispose();
                 bodyFrameReader = null;
+            }
+
+            for(int i = 0; i < bodyCount; i++)
+            {
+                faceFrameReaders[i].Dispose();
+                faceFrameSources[i].Dispose();
             }
 
             if(kinect != null)

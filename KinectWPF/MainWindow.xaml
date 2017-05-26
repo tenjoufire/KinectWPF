@@ -6,7 +6,7 @@
         Closing="Window_Closing">
     <Grid Margin="0,0,-0.2,-3.2">
         <Canvas x:Name="CanvasBody" Width="512" Height="424" Background="Black" Margin="0,0,205,4"/>
-        <Button x:Name="InitButton" Width="100" Height="30" Margin="566,10,51,388" Click="InitButton_Click">Init</Button>
+        <Button x:Name="InitButton" Width="100" Height="30" Margin="512,10,105,388" Click="InitButton_Click">Init</Button>
         <TextBox x:Name="LogText" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Visible" Margin="517,67,10,10"/>
     </Grid>
 </Window>
