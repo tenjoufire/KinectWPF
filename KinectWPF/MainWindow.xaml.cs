@@ -30,6 +30,7 @@ namespace KinectWPF
         FaceFrameResult[] faceFrameResults;
         int bodyCount;
         int timer = 0;
+        int initPitch = 0, initYaw = 0, initRoll = 0;
 
         
         //Joint[] heads;
@@ -148,14 +149,7 @@ namespace KinectWPF
                         timer++;
                         if (timer == 60)
                         {
-                            var faceQuaternion = faceFrameResults[i].FaceRotationQuaternion;
-                            int pitch, yaw, roll;
-                            ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
-                            Dispatcher.Invoke(() =>
-                            {
-                                LogText.Text += $"[{i}] {pitch} {yaw} {roll} {Environment.NewLine}";
-                                LogText.ScrollToEnd();
-                            });
+                            ShowHeadDirection(i);
                             timer = 0;
                         }
                     }
@@ -196,33 +190,16 @@ namespace KinectWPF
             }
         }
 
-        private void ShowHeadDirection()
+        private void ShowHeadDirection(int i)
         {
-            int i = 0;
-            //use tracking body only
-            foreach(var body in bodies.Where(b => b.IsTracked))
+            var faceQuaternion = faceFrameResults[i].FaceRotationQuaternion;
+            int pitch, yaw, roll;
+            ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
+            Dispatcher.Invoke(() =>
             {
-                //頭の情報を取得
-                Joint head = body.Joints[JointType.Head];
-                JointOrientation headOrientation = body.JointOrientations[JointType.Neck];
-                int pitch, yaw, roll;                
-
-                //trackingされてなければスキップ
-                if (head.TrackingState == TrackingState.NotTracked)
-                    continue;
-
-                //変換したい
-                ConvertQuaternionToEulerAngle(headOrientation.Orientation, out pitch, out yaw, out roll);
-                string faceInfo = $"pitch: {pitch} yaw: {yaw} roll: {roll}";
-
-                //GUIスレッドにて非同期に書き込み
-                Dispatcher.Invoke(() =>
-                {
-                    LogText.Text += $"[{i}] {head.Position.X} {head.Position.Y}{Environment.NewLine}{faceInfo}{Environment.NewLine}";
-                    LogText.ScrollToEnd();
-                });
-                i++;
-            }
+                LogText.Text += $"[{i}] {pitch} {yaw} {roll} {Environment.NewLine}";
+                LogText.ScrollToEnd();
+            });
         }
 
         private void DrawEllipse(Joint joint, int R, Brush brush)
@@ -281,7 +258,7 @@ namespace KinectWPF
 
         private void InitButton_Click(object sender, RoutedEventArgs e)
         {
-
+            
         }
     }
 }
