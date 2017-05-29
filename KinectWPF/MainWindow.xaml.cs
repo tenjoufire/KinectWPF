@@ -22,17 +22,19 @@ namespace KinectWPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        KinectSensor kinect;
-        BodyFrameReader bodyFrameReader;
-        Body[] bodies;
-        FaceFrameSource[] faceFrameSources;
-        FaceFrameReader[] faceFrameReaders;
-        FaceFrameResult[] faceFrameResults;
-        int bodyCount;
-        int timer = 0;
-        int initPitch = 0, initYaw = 0, initRoll = 0;
+        private KinectSensor kinect;
+        private BodyFrameReader bodyFrameReader;
+        private Body[] bodies;
+        private FaceFrameSource[] faceFrameSources;
+        private FaceFrameReader[] faceFrameReaders;
+        private FaceFrameResult[] faceFrameResults;
+        private int bodyCount;
+        private int timer = 0;
+        private int[] initPitch;
+        private int[] initYaw;
+        private int[] initRoll;
 
-        
+
         //Joint[] heads;
 
         public MainWindow()
@@ -74,19 +76,24 @@ namespace KinectWPF
             }
             faceFrameResults = new FaceFrameResult[bodyCount];
 
+            //初期頭部方向保存用配列の初期化
+            initPitch = new int[bodyCount];
+            initYaw = new int[bodyCount];
+            initRoll = new int[bodyCount];
+
             InitializeComponent();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-                for (int i = 0; i < bodyCount; i++)
+            for (int i = 0; i < bodyCount; i++)
+            {
+                if (faceFrameReaders[i] != null)
                 {
-                    if (faceFrameReaders[i] != null)
-                    {
-                        // wire handler for face frame arrival
-                        faceFrameReaders[i].FrameArrived += FaceFrameReader_FrameArrived;
-                    }
+                    // wire handler for face frame arrival
+                    faceFrameReaders[i].FrameArrived += FaceFrameReader_FrameArrived;
                 }
+            }
             bodyFrameReader.FrameArrived += BodyFrameReader_FrameArrived;
 
         }
@@ -95,15 +102,7 @@ namespace KinectWPF
         {
             UpdateBodyFrame(e);
             DrawBodyFrame();
-            /*
-            timer++;
-            if (timer == 60)
-            {
-                ShowHeadDirection();
-                timer = 0;
-            }
-            */
-            
+
         }
 
         void FaceFrameReader_FrameArrived(object sender, FaceFrameArrivedEventArgs e)
@@ -133,35 +132,35 @@ namespace KinectWPF
 
         private void UpdateBodyFrame(BodyFrameArrivedEventArgs e)
         {
-            using(var bodyFrame = e.FrameReference.AcquireFrame())
+            using (var bodyFrame = e.FrameReference.AcquireFrame())
             {
-                if(bodyFrame == null)
+                if (bodyFrame == null)
                 {
                     return;
                 }
                 //Get Body Data
                 bodyFrame.GetAndRefreshBodyData(bodies);
-
-                for(int i = 0; i < bodyCount; i++)
+                timer++;
+                if (timer == 60)
                 {
-                    if (faceFrameSources[i].IsTrackingIdValid)
+                    //show face info
+                    for (int i = 0; i < bodyCount; i++)
                     {
-                        timer++;
-                        if (timer == 60)
+                        if (faceFrameSources[i].IsTrackingIdValid)
                         {
                             ShowHeadDirection(i);
-                            timer = 0;
                         }
-                    }
-                    else
-                    {
-                        if (bodies[i].IsTracked)
+                        else
                         {
-                            faceFrameSources[i].TrackingId = bodies[i].TrackingId;
+                            if (bodies[i].IsTracked)
+                            {
+                                faceFrameSources[i].TrackingId = bodies[i].TrackingId;
+                            }
                         }
                     }
+                    timer = 0;
                 }
-                
+
             }
         }
 
@@ -171,18 +170,18 @@ namespace KinectWPF
             CanvasBody.Children.Clear();
 
             //use tracking body only
-            foreach(var body in bodies.Where(b => b.IsTracked))
+            foreach (var body in bodies.Where(b => b.IsTracked))
             {
                 //all joints in the body
-                foreach(var joint in body.Joints)
+                foreach (var joint in body.Joints)
                 {
                     //tracked
-                    if(joint.Value.TrackingState == TrackingState.Tracked)
+                    if (joint.Value.TrackingState == TrackingState.Tracked)
                     {
                         DrawEllipse(joint.Value, 10, Brushes.Blue);
                     }
                     //inferred
-                    if(joint.Value.TrackingState == TrackingState.Inferred)
+                    if (joint.Value.TrackingState == TrackingState.Inferred)
                     {
                         DrawEllipse(joint.Value, 10, Brushes.Yellow);
                     }
@@ -197,14 +196,15 @@ namespace KinectWPF
             ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
             Dispatcher.Invoke(() =>
             {
-                LogText.Text += $"[{i}] {pitch} {yaw} {roll} {Environment.NewLine}";
+                LogText.Text += $"[{i}] pitch {Math.Abs(initPitch[i] - pitch)} yaw {Math.Abs(initYaw[i] -yaw)} roll {roll} {Environment.NewLine}";
+                LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
                 LogText.ScrollToEnd();
             });
         }
 
         private void DrawEllipse(Joint joint, int R, Brush brush)
         {
-            var ellipse = new Ellipse() { Width = R, Height = R, Fill = brush};
+            var ellipse = new Ellipse() { Width = R, Height = R, Fill = brush };
 
             //座標系をカメラ座標系からDepth座標系へ
             var point = kinect.CoordinateMapper.MapCameraPointToDepthSpace(joint.Position);
@@ -218,19 +218,19 @@ namespace KinectWPF
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(bodyFrameReader != null)
+            if (bodyFrameReader != null)
             {
                 bodyFrameReader.Dispose();
                 bodyFrameReader = null;
             }
 
-            for(int i = 0; i < bodyCount; i++)
+            for (int i = 0; i < bodyCount; i++)
             {
                 faceFrameReaders[i].Dispose();
                 faceFrameSources[i].Dispose();
             }
 
-            if(kinect != null)
+            if (kinect != null)
             {
                 kinect.Close();
             }
@@ -258,7 +258,13 @@ namespace KinectWPF
 
         private void InitButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            for (int i = 0; i < bodyCount; i++)
+            {
+                if (faceFrameSources[i].IsTrackingIdValid)
+                {
+                    ConvertQuaternionToEulerAngle(faceFrameResults[i].FaceRotationQuaternion, out initPitch[i], out initYaw[i], out initRoll[i]);
+                }
+            }
         }
     }
 }
