@@ -140,6 +140,8 @@ namespace KinectWPF
                 }
                 //Get Body Data
                 bodyFrame.GetAndRefreshBodyData(bodies);
+
+                //たくさん実行しすぎないように
                 timer++;
                 if (timer == 60)
                 {
@@ -196,7 +198,7 @@ namespace KinectWPF
             ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
             Dispatcher.Invoke(() =>
             {
-                LogText.Text += $"[{i}] pitch {Math.Abs(initPitch[i] - pitch)} yaw {Math.Abs(initYaw[i] -yaw)} roll {roll} {Environment.NewLine}";
+                LogText.Text += $"[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] -yaw} roll {initRoll[i] - roll} {Environment.NewLine}";
                 LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
                 LogText.ScrollToEnd();
             });
