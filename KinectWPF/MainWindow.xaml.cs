@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Face;
+using System.Diagnostics;
 
 namespace KinectWPF
 {
@@ -34,6 +35,8 @@ namespace KinectWPF
         private int[] initYaw;
         private int[] initRoll;
         public bool isRecording = false;
+        private RecordBody recordBody;
+        private Stopwatch stopWatch;
 
 
         //Joint[] heads;
@@ -203,6 +206,11 @@ namespace KinectWPF
                 LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
                 LogText.ScrollToEnd();
             });
+            if (isRecording)
+            {
+                string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}";
+                recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
+            }
         }
 
         private void DrawEllipse(Joint joint, int R, Brush brush)
@@ -276,11 +284,21 @@ namespace KinectWPF
             {
                 RecordButton.Content = "Record";
                 isRecording = false;
+                recordBody.ExportCSV();
+                stopWatch.Stop();
+                stopWatch.Reset();
             }
             else
             {
                 RecordButton.Content = "Stop";
                 isRecording = true;
+
+                //CSV記録用クラスの初期化
+                recordBody = new RecordBody();
+
+                //時間計測タイマーの初期化とタイマーの開始
+                stopWatch = new Stopwatch();
+                stopWatch.Start();
             }
         }
     }
