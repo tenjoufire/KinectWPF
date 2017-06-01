@@ -98,6 +98,7 @@ namespace KinectWPF
                     faceFrameReaders[i].FrameArrived += FaceFrameReader_FrameArrived;
                 }
             }
+            // wire handler for body frame arrival
             bodyFrameReader.FrameArrived += BodyFrameReader_FrameArrived;
 
         }
@@ -111,6 +112,7 @@ namespace KinectWPF
 
         void FaceFrameReader_FrameArrived(object sender, FaceFrameArrivedEventArgs e)
         {
+            //faceframeの登録
             using (var faceFrame = e.FrameReference.AcquireFrame())
             {
                 int index = GetFaceSourceIndex(faceFrame.FaceFrameSource);
@@ -142,7 +144,7 @@ namespace KinectWPF
                 {
                     return;
                 }
-                //Get Body Data
+                //Get and Update Body Data
                 bodyFrame.GetAndRefreshBodyData(bodies);
 
                 //たくさん実行しすぎないように
@@ -197,18 +199,29 @@ namespace KinectWPF
 
         private void ShowHeadDirection(int i)
         {
+            //顔の回転情報の取得
             var faceQuaternion = faceFrameResults[i].FaceRotationQuaternion;
+
             int pitch, yaw, roll;
+
+            //クォータニオンを角度に変換
             ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
+
+            //GUIの更新
             Dispatcher.Invoke(() =>
             {
                 LogText.Text += $"[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] -yaw} roll {initRoll[i] - roll} {Environment.NewLine}";
                 LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
                 LogText.ScrollToEnd();
             });
+
+            //記録中は記録用のクラスへ顔情報を登録
             if (isRecording)
             {
+                //記録開始時からの時間を取得
                 string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}";
+
+                //記録用クラスへ登録
                 recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
             }
         }
