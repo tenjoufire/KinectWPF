@@ -33,6 +33,7 @@ namespace KinectWPF
         private int[] initPitch;
         private int[] initYaw;
         private int[] initRoll;
+        public bool isRecording = false;
 
 
         //Joint[] heads;
@@ -266,6 +267,20 @@ namespace KinectWPF
                 {
                     ConvertQuaternionToEulerAngle(faceFrameResults[i].FaceRotationQuaternion, out initPitch[i], out initYaw[i], out initRoll[i]);
                 }
+            }
+        }
+
+        private void RecordButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isRecording)
+            {
+                RecordButton.Content = "Record";
+                isRecording = false;
+            }
+            else
+            {
+                RecordButton.Content = "Stop";
+                isRecording = true;
             }
         }
     }
