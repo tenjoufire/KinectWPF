@@ -221,8 +221,12 @@ namespace KinectWPF
                 //記録開始時からの時間を取得
                 string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}";
 
+                //顔の位置情報の取得
+                var facePositon = bodies[i].Joints[JointType.Head].Position;
+
                 //記録用クラスへ登録
                 recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
+                recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon);
             }
         }
 
@@ -298,6 +302,7 @@ namespace KinectWPF
                 RecordButton.Content = "Record";
                 isRecording = false;
                 recordBody.ExportCSV();
+                recordBody.ExportJson();
                 stopWatch.Stop();
                 stopWatch.Reset();
             }
