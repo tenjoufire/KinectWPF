@@ -20,6 +20,7 @@ namespace KinectWPF
         {
             this.faceRotationInfoString = new List<string>();
             faceInfo = new FaceInfo();
+            faceInfo.faceInfos = new List<Face>();
         }
 
         public void AddFaceRotationInfo(string faceInfo)
