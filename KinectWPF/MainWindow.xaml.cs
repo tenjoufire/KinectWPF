@@ -147,27 +147,22 @@ namespace KinectWPF
                 //Get and Update Body Data
                 bodyFrame.GetAndRefreshBodyData(bodies);
 
-                //たくさん実行しすぎないように
-                timer++;
-                if (timer == 60)
+                //show face info
+                for (int i = 0; i < bodyCount; i++)
                 {
-                    //show face info
-                    for (int i = 0; i < bodyCount; i++)
+                    if (faceFrameSources[i].IsTrackingIdValid)
                     {
-                        if (faceFrameSources[i].IsTrackingIdValid)
+                        ShowHeadDirection(i);
+                    }
+                    else
+                    {
+                        if (bodies[i].IsTracked)
                         {
-                            ShowHeadDirection(i);
-                        }
-                        else
-                        {
-                            if (bodies[i].IsTracked)
-                            {
-                                faceFrameSources[i].TrackingId = bodies[i].TrackingId;
-                            }
+                            faceFrameSources[i].TrackingId = bodies[i].TrackingId;
                         }
                     }
-                    timer = 0;
                 }
+
 
             }
         }
@@ -206,20 +201,24 @@ namespace KinectWPF
 
             //クォータニオンを角度に変換
             ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
-
-            //GUIの更新
-            Dispatcher.Invoke(() =>
+            timer++;
+            if (timer == 60)
             {
-                LogText.Text += $"[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] -yaw} roll {initRoll[i] - roll} {Environment.NewLine}";
-                LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
-                LogText.ScrollToEnd();
-            });
+                //GUIの更新
+                Dispatcher.Invoke(() =>
+                {
+                    LogText.Text += $"[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll} {Environment.NewLine}";
+                    LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
+                    LogText.ScrollToEnd();
+                });
+                timer = 0;
+            }
 
             //記録中は記録用のクラスへ顔情報を登録
             if (isRecording)
             {
                 //記録開始時からの時間を取得
-                string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}";
+                string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}:{stopWatch.Elapsed.Milliseconds}";
 
                 //顔の位置情報の取得
                 var facePositon = bodies[i].Joints[JointType.Head].Position;
