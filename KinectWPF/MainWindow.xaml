@@ -6,8 +6,9 @@
         Closing="Window_Closing">
     <Grid Margin="0,0,-0.2,-3.2">
         <Canvas x:Name="CanvasBody" Width="512" Height="424" Background="Black" Margin="0,0,240.2,4"/>
-        <Button x:Name="InitButton" Width="100" Height="30" Margin="527,32,125.2,366" Click="InitButton_Click">Init</Button>
-        <Button x:Name="RecordButton" Content="Record" Width="100" Height="30" Margin="632,32,20.2,366" Click="RecordButton_Click"></Button>
+        <Button x:Name="InitButton" Margin="527,32,115.2,355" Click="InitButton_Click">Init</Button>
+        <Button x:Name="RecordButton" Content="Record" Margin="642,32,10.2,355" Click="RecordButton_Click"/>
         <TextBox x:Name="LogText" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Visible" Margin="512,73,0.2,4"/>
+        <CheckBox x:Name="DrowBodyCheck" Content="Drow Body" IsChecked="True" Margin="517,10,20.2,396" Unchecked="DrowBodyCheck_Unchecked" Checked="DrowBodyCheck_Checked"></CheckBox>
     </Grid>
 </Window>

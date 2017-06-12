@@ -31,10 +31,12 @@ namespace KinectWPF
         private FaceFrameResult[] faceFrameResults;
         private int bodyCount;
         private int timer = 0;
+        private bool canWriteLine = false;
         private int[] initPitch;
         private int[] initYaw;
         private int[] initRoll;
         public bool isRecording = false;
+        public bool drawBody = true;
         private RecordBody recordBody;
         private Stopwatch stopWatch;
 
@@ -106,7 +108,10 @@ namespace KinectWPF
         void BodyFrameReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
         {
             UpdateBodyFrame(e);
-            DrawBodyFrame();
+            if (drawBody)
+            {
+                DrawBodyFrame();
+            }
 
         }
 
@@ -163,6 +168,17 @@ namespace KinectWPF
                     }
                 }
 
+                timer++;
+                if(timer == 60)
+                {
+                    canWriteLine = true;
+                }
+                if(timer > 60)
+                {
+                    canWriteLine = false;
+                    timer = 0;
+                }
+
 
             }
         }
@@ -201,8 +217,7 @@ namespace KinectWPF
 
             //クォータニオンを角度に変換
             ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
-            timer++;
-            if (timer == 60)
+            if (canWriteLine)
             {
                 //GUIの更新
                 Dispatcher.Invoke(() =>
@@ -211,7 +226,6 @@ namespace KinectWPF
                     LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
                     LogText.ScrollToEnd();
                 });
-                timer = 0;
             }
 
             //記録中は記録用のクラスへ顔情報を登録
@@ -317,6 +331,16 @@ namespace KinectWPF
                 stopWatch = new Stopwatch();
                 stopWatch.Start();
             }
+        }
+
+        private void DrowBodyCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            drawBody = false;
+        }
+
+        private void DrowBodyCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            drawBody = true;
         }
     }
 }
