@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Kinect;
+using Microsoft.Kinect.Face;
+using System;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Microsoft.Kinect;
-using Microsoft.Kinect.Face;
-using System.Diagnostics;
 
 namespace KinectWPF
 {
@@ -29,6 +22,8 @@ namespace KinectWPF
         private FaceFrameSource[] faceFrameSources;
         private FaceFrameReader[] faceFrameReaders;
         private FaceFrameResult[] faceFrameResults;
+        private AudioBeamFrameReader audioBeamFrameReader;
+        private readonly byte[] audioBuffer;
         private int bodyCount;
         private int timer = 0;
         private bool canWriteLine = false;
@@ -39,6 +34,7 @@ namespace KinectWPF
         public bool drawBody = true;
         private RecordBody recordBody;
         private Stopwatch stopWatch;
+        private float beamAngle = 0.0f;
 
 
         //Joint[] heads;
@@ -87,6 +83,11 @@ namespace KinectWPF
             initYaw = new int[bodyCount];
             initRoll = new int[bodyCount];
 
+            //audio関連のreaderをopen
+            AudioSource audioSource = kinect.AudioSource;
+            audioBuffer = new byte[audioSource.SubFrameLengthInBytes];
+            audioBeamFrameReader = audioSource.OpenReader();
+
             InitializeComponent();
         }
 
@@ -102,6 +103,11 @@ namespace KinectWPF
             }
             // wire handler for body frame arrival
             bodyFrameReader.FrameArrived += BodyFrameReader_FrameArrived;
+
+            if(audioBeamFrameReader != null)
+            {
+                audioBeamFrameReader.FrameArrived += AudioBeamFrameReader_FrameArrived;
+            }
 
         }
 
@@ -122,6 +128,29 @@ namespace KinectWPF
             {
                 int index = GetFaceSourceIndex(faceFrame.FaceFrameSource);
                 faceFrameResults[index] = faceFrame.FaceFrameResult;
+            }
+        }
+
+        void AudioBeamFrameReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
+        {
+            AudioBeamFrameReference frameReference = e.FrameReference;
+            AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
+
+            if(frameList != null)
+            {
+                using (frameList)
+                {
+                    //Audio beamは1つしかサポートされていないため1つのsubframeを取る
+                    IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
+
+                    foreach(var subFrame in subFrameList)
+                    {
+                        if(subFrame.BeamAngle != beamAngle)
+                        {
+                            beamAngle = subFrame.BeamAngle;
+                        }
+                    }
+                }
             }
         }
 
@@ -223,7 +252,7 @@ namespace KinectWPF
                 Dispatcher.Invoke(() =>
                 {
                     LogText.Text += $"[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll} {Environment.NewLine}";
-                    LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]} {Environment.NewLine}";
+                    LogText.Text += $"init[{i}] {initPitch[i]} {initYaw[i]}  {beamAngle} {Environment.NewLine}";
                     LogText.ScrollToEnd();
                 });
             }
