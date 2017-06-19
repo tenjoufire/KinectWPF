@@ -10,5 +10,6 @@
         <Button x:Name="RecordButton" Content="Record" Margin="787,98,20.6,289" Click="RecordButton_Click"/>
         <TextBox x:Name="LogText" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Visible" Margin="522,73,214.6,4"/>
         <CheckBox x:Name="DrowBodyCheck" Content="Drow Body" IsChecked="True" Margin="517,10,20.2,396" Unchecked="DrowBodyCheck_Unchecked" Checked="DrowBodyCheck_Checked"></CheckBox>
+        <TextBox x:Name="WhoIsSpeak" IsReadOnly="True" Text="どっちがしゃべってるん？" TextAlignment="Center" BorderBrush="White" Margin="787,166,20.6,223" ></TextBox>
     </Grid>
 </Window>

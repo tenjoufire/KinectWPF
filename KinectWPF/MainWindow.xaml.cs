@@ -152,6 +152,14 @@ namespace KinectWPF
                     }
                 }
             }
+            if(beamAngle < 0)
+            {
+                WhoIsSpeak.Text = "Kinectから見て右の人が話しています";
+            }
+            else
+            {
+                WhoIsSpeak.Text = "Kinectから見て左の人が話しています";
+            }
         }
 
         private int GetFaceSourceIndex(FaceFrameSource faceFrameSource)
