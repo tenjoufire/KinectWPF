@@ -35,6 +35,13 @@ namespace KinectWPF
         private RecordBody recordBody;
         private Stopwatch stopWatch;
         private float beamAngle = 0.0f;
+        private bool isSpeaking = false;
+        private readonly float SpeakThreshold = -70;
+
+        private float accumulatedSquareSum;
+        private int accumulatedSampleCount;
+        private const int SamplesPerColumn = 40;
+        private float energy;
 
 
         //Joint[] heads;
@@ -145,20 +152,51 @@ namespace KinectWPF
 
                     foreach(var subFrame in subFrameList)
                     {
+                        
                         if(subFrame.BeamAngle != beamAngle)
                         {
                             beamAngle = subFrame.BeamAngle;
                         }
+
+                        //Kinectが閾値以上の音を拾っているかどうか検出
+                        subFrame.CopyFrameDataToArray(audioBuffer);
+                        for(int i = 0; i < audioBuffer.Length; i += sizeof(float))
+                        {
+                            float audioSample = BitConverter.ToSingle(this.audioBuffer, i);
+                            accumulatedSquareSum += audioSample * audioSample;
+                            ++accumulatedSampleCount;
+                            float meanSquare = this.accumulatedSquareSum / SamplesPerColumn;
+                            if (meanSquare > 1.0f)
+                            {
+                                meanSquare = 1.0f;
+                            }
+                            if (meanSquare > 0)
+                            {
+                                energy = (float)(10.0 * Math.Log10(meanSquare));
+                            }
+                            SpeakEnergy.Text = energy.ToString() + " " + isSpeaking;
+                            this.accumulatedSquareSum = 0;
+                            this.accumulatedSampleCount = 0;
+                            if(energy > SpeakThreshold)
+                            {
+                                isSpeaking = true;
+                            }
+                            else
+                            {
+                                isSpeaking = false;
+                            }
+                        }
+
                     }
                 }
             }
             if(beamAngle < 0)
             {
-                WhoIsSpeak.Text = "Kinectから見て右の人が話しています";
+                WhoIsSpeak.Text = $"Kinectから見て{Environment.NewLine}右の人が話しています";
             }
             else
             {
-                WhoIsSpeak.Text = "Kinectから見て左の人が話しています";
+                WhoIsSpeak.Text = $"Kinectから見て{Environment.NewLine}左の人が話しています";
             }
         }
 
@@ -300,6 +338,12 @@ namespace KinectWPF
             {
                 bodyFrameReader.Dispose();
                 bodyFrameReader = null;
+            }
+
+            if(audioBeamFrameReader != null)
+            {
+                audioBeamFrameReader.Dispose();
+                audioBeamFrameReader = null;
             }
 
             for (int i = 0; i < bodyCount; i++)
