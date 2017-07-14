@@ -28,7 +28,7 @@ namespace KinectWPF
             this.faceRotationInfoString.Add(faceInfo);
         }
 
-        public void AddFaceInfo(int index, string time, int pitch, int yaw, int roll, CameraSpacePoint point)
+        public void AddFaceInfo(int index, string time, int pitch, int yaw, int roll, CameraSpacePoint point, float beamAngle, bool isSpeaking)
         {
             var face = new Face()
             {
@@ -39,6 +39,8 @@ namespace KinectWPF
                 trackingID = index,
                 positionX = point.X,
                 positionY = point.Y,
+                beamAngle = beamAngle,
+                isSpeaking = isSpeaking
             };
             faceInfo.faceInfos.Add(face);
         }
@@ -51,7 +53,7 @@ namespace KinectWPF
             {
                 using (var sw = new StreamWriter($"faceinfo{dt.Month}{dt.Day}{dt.Hour}{dt.Minute}.csv", false))
                 {
-                    foreach(var line in this.faceRotationInfoString)
+                    foreach (var line in this.faceRotationInfoString)
                     {
                         sw.WriteLine(line + ",");
                     }

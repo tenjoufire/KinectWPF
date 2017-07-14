@@ -20,5 +20,7 @@ namespace KinectWPF
         public int roll { get; set; }
         public float positionX { get; set; }
         public float positionY { get; set; }
+        public float beamAngle { get; set; }
+        public bool isSpeaking { get; set; }
     }
 }

@@ -314,7 +314,7 @@ namespace KinectWPF
 
                 //記録用クラスへ登録
                 recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
-                recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon);
+                recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon, beamAngle, isSpeaking);
             }
         }
 
