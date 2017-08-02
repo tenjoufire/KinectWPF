@@ -1,9 +1,9 @@
 ﻿using Microsoft.Kinect;
 using Microsoft.Kinect.Face;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -36,7 +36,7 @@ namespace KinectWPF
         private Stopwatch stopWatch;
         private float beamAngle = 0.0f;
         private bool isSpeaking = false;
-        private readonly float SpeakThreshold = -70;
+        private readonly float SpeakThreshold = -80;
 
         private float accumulatedSquareSum;
         private int accumulatedSampleCount;
@@ -307,7 +307,7 @@ namespace KinectWPF
             if (isRecording)
             {
                 //記録開始時からの時間を取得
-                string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}:{stopWatch.Elapsed.Milliseconds}";
+                string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}.{stopWatch.Elapsed.Milliseconds}";
 
                 //顔の位置情報の取得
                 var facePositon = bodies[i].Joints[JointType.Head].Position;

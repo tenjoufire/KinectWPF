@@ -39,6 +39,7 @@ namespace KinectWPF
                 trackingID = index,
                 positionX = point.X,
                 positionY = point.Y,
+                positionZ = point.Z,
                 beamAngle = beamAngle,
                 isSpeaking = isSpeaking
             };
@@ -84,6 +85,11 @@ namespace KinectWPF
 
                 throw;
             }
+        }
+
+        public void ConvertFaceInfoToLabel()
+        {
+
         }
 
 
