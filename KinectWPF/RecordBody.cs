@@ -14,6 +14,7 @@ namespace KinectWPF
     {
         private List<String> faceRotationInfoString;
         private FaceInfo faceInfo;
+        private TimeLineLabel timeLineLabel;
 
         //コンストラクタ
         public RecordBody()
@@ -21,6 +22,8 @@ namespace KinectWPF
             this.faceRotationInfoString = new List<string>();
             faceInfo = new FaceInfo();
             faceInfo.faceInfos = new List<Face>();
+            timeLineLabel = new TimeLineLabel();
+            timeLineLabel.Labels = new List<Label>();
         }
 
         public void AddFaceRotationInfo(string faceInfo)
@@ -45,6 +48,18 @@ namespace KinectWPF
             };
             faceInfo.faceInfos.Add(face);
         }
+
+        public void AddLabel(string startTime, string endTime, string type)
+        {
+            var label = new Label()
+            {
+                StartTime = startTime,
+                EndTime = endTime,
+                LabelType = type
+            };
+            timeLineLabel.Labels.Add(label);
+        }
+
 
         public void ExportCSV()
         {
@@ -89,7 +104,45 @@ namespace KinectWPF
 
         public void ConvertFaceInfoToLabel()
         {
+            bool prevSpeaking = false;
+            string startTime = "";
+            string type = "";
 
+            foreach(var face in faceInfo.faceInfos)
+            {
+                //音声情報部門
+                //発話の開始
+                if(face.isSpeaking && !prevSpeaking)
+                {
+                    startTime = face.time;
+                    type = face.beamAngle > 0 ? "LeftSpeak" : "RightSpeak";
+                }
+
+                //発話の終了
+                if(!face.isSpeaking && prevSpeaking)
+                {
+                    AddLabel(startTime, face.time, type);
+                }
+                else if (face.beamAngle)//発話者交代
+                {
+                    AddLabel(startTime, face.time, type);
+                    startTime = face.time;
+                    type = face.beamAngle > 0 ? "LeftSpeak" : "RightSpeak";
+
+                }
+
+                //直前の発話状況の格納
+                if (face.isSpeaking)
+                {
+                    prevSpeaking = true;
+                }
+                else
+                {
+                    prevSpeaking = false;
+                }
+
+                
+            }
         }
 
 
