@@ -107,6 +107,7 @@ namespace KinectWPF
             bool prevSpeaking = false;
             string startTime = "";
             string type = "";
+            float prevBeamAngle = 0f;
 
             foreach(var face in faceInfo.faceInfos)
             {
@@ -123,13 +124,16 @@ namespace KinectWPF
                 {
                     AddLabel(startTime, face.time, type);
                 }
-                else if (face.beamAngle)//発話者交代
+                else if (face.beamAngle * prevBeamAngle < 0)//発話者交代
                 {
                     AddLabel(startTime, face.time, type);
                     startTime = face.time;
                     type = face.beamAngle > 0 ? "LeftSpeak" : "RightSpeak";
 
                 }
+
+                //直前の発話方向の格納
+                prevBeamAngle = face.beamAngle;
 
                 //直前の発話状況の格納
                 if (face.isSpeaking)
