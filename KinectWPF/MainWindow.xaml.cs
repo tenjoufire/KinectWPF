@@ -397,6 +397,7 @@ namespace KinectWPF
                 isRecording = false;
                 recordBody.ExportCSV();
                 recordBody.ExportJson();
+                recordBody.ExportLabelJson();
                 stopWatch.Stop();
                 stopWatch.Reset();
             }

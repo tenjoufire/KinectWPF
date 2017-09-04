@@ -102,6 +102,27 @@ namespace KinectWPF
             }
         }
 
+        public void ExportLabelJson()
+        {
+            ConvertFaceInfoToLabel();
+
+            var jsonString = JsonConvert.SerializeObject(timeLineLabel);
+            var dt = new DateTime();
+            dt = DateTime.Now;
+            try
+            {
+                using (var sw = new StreamWriter($"label{dt.Month}{dt.Day}{dt.Hour}{dt.Minute}.json", false))
+                {
+                    sw.WriteLine(jsonString);
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+        }
+
         public void ConvertFaceInfoToLabel()
         {
             bool prevSpeaking = false;
