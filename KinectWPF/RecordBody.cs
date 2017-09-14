@@ -130,7 +130,10 @@ namespace KinectWPF
             string type = "";
             float prevBeamAngle = 0f;
 
-            foreach(var face in faceInfo.faceInfos)
+            int defaultID = faceInfo.faceInfos[0].trackingID;
+
+            //音声情報のラベルは1人分から分析したいのでfaceのフィルタリングを行う
+            foreach (var face in faceInfo.faceInfos.Where(x => x.trackingID == defaultID))
             {
                 //音声情報部門
                 //発話の開始
