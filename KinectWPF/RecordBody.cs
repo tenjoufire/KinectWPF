@@ -69,9 +69,32 @@ namespace KinectWPF
             {
                 using (var sw = new StreamWriter($"faceinfo{dt.Month}{dt.Day}{dt.Hour}{dt.Minute}.csv", false))
                 {
+                    /*
                     foreach (var line in this.faceRotationInfoString)
                     {
                         sw.WriteLine(line + ",");
+                    }
+                    */
+                    var nextLine = true;
+                    var prevTime = "";
+                    foreach(var line in this.faceRotationInfoString)
+                    {
+                        nextLine = line.Split(',')[0] == prevTime ? false : true;
+
+                        if (nextLine)
+                        {
+                            sw.Write(",");
+                            sw.WriteLine();
+                            sw.Write(line);
+                            prevTime = line.Split(',')[0];
+                        }
+                        else
+                        {
+                            var subLineArray = line.Split(',');
+                            subLineArray[0] = "";
+                            sw.Write(String.Join(",", subLineArray));
+                            prevTime = line.Split(',')[0];
+                        }
                     }
                 }
             }
@@ -130,10 +153,10 @@ namespace KinectWPF
             string type = "";
             float prevBeamAngle = 0f;
 
-            int defaultID = faceInfo.faceInfos[0].trackingID;
+            //int defaultID = faceInfo.faceInfos[0].trackingID;
 
             //音声情報のラベルは1人分から分析したいのでfaceのフィルタリングを行う
-            foreach (var face in faceInfo.faceInfos.Where(x => x.trackingID == defaultID))
+            foreach (var face in faceInfo.faceInfos/*.Where(x => x.trackingID == defaultID)*/)
             {
                 //音声情報部門
                 //発話の開始

@@ -12,5 +12,6 @@
         <CheckBox x:Name="DrowBodyCheck" Content="Drow Body" IsChecked="True" Margin="517,10,20.2,396" Unchecked="DrowBodyCheck_Unchecked" Checked="DrowBodyCheck_Checked"></CheckBox>
         <TextBox x:Name="WhoIsSpeak" IsReadOnly="True" Text="どっちがしゃべってるん？" TextAlignment="Center"  BorderBrush="White" Margin="787,166,20.6,189" ></TextBox>
         <TextBlock x:Name="SpeakEnergy" Text="0" TextAlignment="Center" Margin="787,215,21.2,140.2" RenderTransformOrigin="0.684,1.073"></TextBlock>
+        <TextBlock x:Name="JointAttention" Text="meu" TextAlignment="Center" FontSize="20" Margin="799,293,37.6,63"></TextBlock>
     </Grid>
 </Window>

@@ -43,11 +43,14 @@ namespace KinectWPF
         private const int SamplesPerColumn = 40;
         private float energy;
 
+        
+
 
         //Joint[] heads;
 
         public MainWindow()
         {
+
             // specify the required face frame results
             FaceFrameFeatures faceFrameFeatures =
                 FaceFrameFeatures.BoundingBoxInColorSpace
@@ -309,11 +312,14 @@ namespace KinectWPF
                 //記録開始時からの時間を取得
                 string time = $"{stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds}.{stopWatch.Elapsed.Milliseconds}";
 
+                var motionDataUtilityTime = $"{stopWatch.Elapsed.TotalSeconds}";
+
                 //顔の位置情報の取得
                 var facePositon = bodies[i].Joints[JointType.Head].Position;
 
                 //記録用クラスへ登録
-                recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
+                //recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
+                recordBody.AddFaceRotationInfo($"{motionDataUtilityTime},{i+1},{facePositon.X * 1000},{facePositon.Y * 1000},{facePositon.Z * 1000},{roll},{pitch},{yaw}");
                 recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon, beamAngle, isSpeaking);
             }
         }
