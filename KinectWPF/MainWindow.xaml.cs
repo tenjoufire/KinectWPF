@@ -43,7 +43,9 @@ namespace KinectWPF
         private const int SamplesPerColumn = 40;
         private float energy;
 
-        
+        private int csvCount = 10;
+        private string prevMotionDataUtilityTime = "";
+
 
 
         //Joint[] heads;
@@ -230,12 +232,14 @@ namespace KinectWPF
                 //Get and Update Body Data
                 bodyFrame.GetAndRefreshBodyData(bodies);
 
+                //Console.WriteLine(faceFrameSources.Count(x => x.IsTrackingIdValid));
+
                 //show face info
                 for (int i = 0; i < bodyCount; i++)
                 {
                     if (faceFrameSources[i].IsTrackingIdValid)
                     {
-                        ShowHeadDirection(i);
+                        ShowHeadDirection(i, faceFrameSources.Count(x => x.IsTrackingIdValid));
                     }
                     else
                     {
@@ -286,7 +290,7 @@ namespace KinectWPF
             }
         }
 
-        private void ShowHeadDirection(int i)
+        private void ShowHeadDirection(int i, int bodyNum)
         {
             //顔の回転情報の取得
             var faceQuaternion = faceFrameResults[i].FaceRotationQuaternion;
@@ -317,9 +321,20 @@ namespace KinectWPF
                 //顔の位置情報の取得
                 var facePositon = bodies[i].Joints[JointType.Head].Position;
 
+
+                csvCount++;
+                if (bodyNum <= csvCount)
+                {
+                    prevMotionDataUtilityTime = motionDataUtilityTime;
+                    csvCount = 0;
+                }
+                
+
                 //記録用クラスへ登録
                 //recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
-                recordBody.AddFaceRotationInfo($"{motionDataUtilityTime},{i+1},{facePositon.X * 1000},{facePositon.Y * 1000 + 100},{facePositon.Z * 1000},{100},{roll},{pitch},{yaw}");
+                recordBody.AddFaceRotationInfo($"{prevMotionDataUtilityTime},{i+1},{facePositon.X * 1000},{facePositon.Y * 1000 + 100},{facePositon.Z * 1000},{100},{roll},{pitch},{yaw}");
+
+
                 recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon, beamAngle, isSpeaking);
             }
         }
