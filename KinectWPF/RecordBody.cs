@@ -31,7 +31,7 @@ namespace KinectWPF
             this.faceRotationInfoString.Add(faceInfo);
         }
 
-        public void AddFaceInfo(int index, string time, int pitch, int yaw, int roll, CameraSpacePoint point, float beamAngle, bool isSpeaking)
+        public void AddFaceInfo(int index, string time, double pitch, double yaw, double roll, CameraSpacePoint point, float beamAngle, bool isSpeaking)
         {
             var face = new Face()
             {

@@ -15,9 +15,9 @@ namespace KinectWPF
     {
         public string time { get; set; }
         public int trackingID { get; set; }
-        public int pitch { get; set; }
-        public int yaw { get; set; }
-        public int roll { get; set; }
+        public double pitch { get; set; }
+        public double yaw { get; set; }
+        public double roll { get; set; }
         public float positionX { get; set; }
         public float positionY { get; set; }
         public float positionZ { get; set;}

@@ -27,9 +27,9 @@ namespace KinectWPF
         private int bodyCount;
         private int timer = 0;
         private bool canWriteLine = false;
-        private int[] initPitch;
-        private int[] initYaw;
-        private int[] initRoll;
+        private double[] initPitch;
+        private double[] initYaw;
+        private double[] initRoll;
         public bool isRecording = false;
         public bool drawBody = true;
         private RecordBody recordBody;
@@ -91,9 +91,9 @@ namespace KinectWPF
             faceFrameResults = new FaceFrameResult[bodyCount];
 
             //初期頭部方向保存用配列の初期化
-            initPitch = new int[bodyCount];
-            initYaw = new int[bodyCount];
-            initRoll = new int[bodyCount];
+            initPitch = new double[bodyCount];
+            initYaw = new double[bodyCount];
+            initRoll = new double[bodyCount];
 
             //audio関連のreaderをopen
             AudioSource audioSource = kinect.AudioSource;
@@ -295,7 +295,7 @@ namespace KinectWPF
             //顔の回転情報の取得
             var faceQuaternion = faceFrameResults[i].FaceRotationQuaternion;
 
-            int pitch, yaw, roll;
+            double pitch, yaw, roll;
 
             //クォータニオンを角度に変換
             ConvertQuaternionToEulerAngle(faceQuaternion, out pitch, out yaw, out roll);
@@ -379,7 +379,7 @@ namespace KinectWPF
             }
         }
 
-        private void ConvertQuaternionToEulerAngle(Vector4 rotQuaternion, out int pitch, out int yaw, out int roll)
+        private void ConvertQuaternionToEulerAngle(Vector4 rotQuaternion, out double pitch, out double yaw, out double roll)
         {
             double x = rotQuaternion.X;
             double y = rotQuaternion.Y;
@@ -387,16 +387,20 @@ namespace KinectWPF
             double w = rotQuaternion.W;
 
             // convert face rotation quaternion to Euler angles in degrees
-            double yawD, pitchD, rollD;
-            pitchD = Math.Atan2(2 * ((y * z) + (w * x)), (w * w) - (x * x) - (y * y) + (z * z)) / Math.PI * 180.0;
-            yawD = Math.Asin(2 * ((w * y) - (x * z))) / Math.PI * 180.0;
-            rollD = Math.Atan2(2 * ((x * y) + (w * z)), (w * w) + (x * x) - (y * y) - (z * z)) / Math.PI * 180.0;
+            //double yawD, pitchD, rollD;
+            pitch = Math.Atan2(2 * ((y * z) + (w * x)), (w * w) - (x * x) - (y * y) + (z * z)) / Math.PI * 180.0;
+            yaw = Math.Asin(2 * ((w * y) - (x * z))) / Math.PI * 180.0;
+            roll = Math.Atan2(2 * ((x * y) + (w * z)), (w * w) + (x * x) - (y * y) - (z * z)) / Math.PI * 180.0;
 
+            //Console.WriteLine($"roll:{rollD} pitch:{pitchD} yaw:{yawD}");
+
+            /*
             // clamp the values to a multiple of the specified increment to control the refresh rate
             double increment = 5.0;
             pitch = (int)(Math.Floor((pitchD + ((increment / 2.0) * (pitchD > 0 ? 1.0 : -1.0))) / increment) * increment);
             yaw = (int)(Math.Floor((yawD + ((increment / 2.0) * (yawD > 0 ? 1.0 : -1.0))) / increment) * increment);
             roll = (int)(Math.Floor((rollD + ((increment / 2.0) * (rollD > 0 ? 1.0 : -1.0))) / increment) * increment);
+            */
         }
 
         private void InitButton_Click(object sender, RoutedEventArgs e)
