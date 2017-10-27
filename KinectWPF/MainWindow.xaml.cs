@@ -321,6 +321,21 @@ namespace KinectWPF
                 //顔の位置情報の取得
                 var facePositon = bodies[i].Joints[JointType.Head].Position;
 
+                //両肩の中心の位置情報の取得
+                var shoulderPosition = bodies[i].Joints[JointType.SpineShoulder].Position;
+
+                //両手の位置情報の取得
+                var leftHandPosition = bodies[i].Joints[JointType.HandLeft].Position;
+                var rightHandposition = bodies[i].Joints[JointType.HandRight].Position;
+
+                //モーションデータユーティリティで表示するための座標調整
+                int offsetY = 800;
+                int offsetRate = 1000;
+
+                var faceCSVString = $"{facePositon.X * offsetRate},{facePositon.Y * offsetRate + offsetY},{facePositon.Z * offsetRate}";
+                var shoulderCSVString = $"{shoulderPosition.X * offsetRate},{shoulderPosition.Y * offsetRate + offsetY},{shoulderPosition.Z * offsetRate}";
+                var leftHandCSVString = $"{leftHandPosition.X * offsetRate},{leftHandPosition.Y * offsetRate + offsetY},{leftHandPosition.Z * offsetRate}";
+                var rightHandCSVString = $"{rightHandposition.X * offsetRate},{rightHandposition.Y * offsetRate + offsetY},{rightHandposition.Z * offsetRate}";
 
                 csvCount++;
                 if (bodyNum <= csvCount)
@@ -332,7 +347,8 @@ namespace KinectWPF
 
                 //記録用クラスへ登録
                 //recordBody.AddFaceRotationInfo($"{time},[{i}] pitch {initPitch[i] - pitch} yaw {initYaw[i] - yaw} roll {initRoll[i] - roll}");
-                recordBody.AddFaceRotationInfo($"{prevMotionDataUtilityTime},{i+1},{facePositon.X * 1000},{facePositon.Y * 1000 + 100},{facePositon.Z * 1000},{100},{roll},{pitch},{yaw}");
+                //recordBody.AddFaceRotationInfo($"{prevMotionDataUtilityTime},{i+1},{facePositon.X * 1000},{facePositon.Y * 1000 + 100},{facePositon.Z * 1000},{100},{roll},{pitch},{yaw}");
+                recordBody.AddFaceRotationInfo($"{prevMotionDataUtilityTime},{i + 1},{shoulderCSVString},{i + 1},{leftHandCSVString},{i + 1},{rightHandCSVString},{i + 1},{faceCSVString},{100},{roll},{pitch},{yaw}");
 
 
                 recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon, beamAngle, isSpeaking);
