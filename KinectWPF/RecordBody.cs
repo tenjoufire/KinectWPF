@@ -146,6 +146,23 @@ namespace KinectWPF
             }
         }
 
+        public void ExportLabelCsv()
+        {
+            ConvertFaceInfoToLabel();
+
+            var dt = new DateTime();
+            dt = DateTime.Now;
+            
+            using(var sw = new StreamWriter($"label{dt.Month}{dt.Day}{dt.Hour}{dt.Minute}.csv", false))
+            {
+                foreach(var label in timeLineLabel.Labels)
+                {
+                    sw.WriteLine($"{label.StartTime},{label.EndTime},{label.LabelType},");
+                }
+            }
+
+        }
+
         public void ConvertFaceInfoToLabel()
         {
             bool prevSpeaking = false;

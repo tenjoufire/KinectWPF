@@ -329,7 +329,7 @@ namespace KinectWPF
                 var rightHandposition = bodies[i].Joints[JointType.HandRight].Position;
 
                 //モーションデータユーティリティで表示するための座標調整
-                int offsetY = 800;
+                int offsetY = 1500;
                 int offsetRate = 1000;
 
                 var faceCSVString = $"{facePositon.X * offsetRate},{facePositon.Y * offsetRate + offsetY},{facePositon.Z * offsetRate}";
@@ -351,7 +351,7 @@ namespace KinectWPF
                 recordBody.AddFaceRotationInfo($"{prevMotionDataUtilityTime},{i + 1},{shoulderCSVString},{i + 1},{leftHandCSVString},{i + 1},{rightHandCSVString},{i + 1},{faceCSVString},{100},{roll},{pitch},{yaw}");
 
 
-                recordBody.AddFaceInfo(i, time, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon, beamAngle, isSpeaking);
+                recordBody.AddFaceInfo(i, motionDataUtilityTime, initPitch[i] - pitch, initYaw[i] - yaw, initRoll[i] - roll, facePositon, beamAngle, isSpeaking);
             }
         }
 
@@ -439,6 +439,7 @@ namespace KinectWPF
                 recordBody.ExportCSV();
                 recordBody.ExportJson();
                 recordBody.ExportLabelJson();
+                recordBody.ExportLabelCsv();
                 stopWatch.Stop();
                 stopWatch.Reset();
             }
